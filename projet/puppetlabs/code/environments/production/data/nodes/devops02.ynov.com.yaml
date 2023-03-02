@@ -1,0 +1,52 @@
+classes:
+  - accounts
+  - zsh
+  - docker
+  - docker::compose
+  - containers
+
+docker::docker_users:
+  - vagrant
+
+docker::compose::ensure: 'present'
+docker::compose::version: 'v2.12.2'
+
+accounts::user_defaults:
+  groups: [ 'users' ]
+  managehome: true
+  system:     false
+
+accounts::user_list:
+  axel:
+    groups: [ 'sudo' ]
+    shell: "/bin/zsh"
+  vagrant:
+    shell: "/bin/zsh"
+  root:
+    shell: "/bin/zsh"
+
+zsh::users_config:
+  root:
+    home: "/root"
+    ohmyzsh:
+      ensure: "present"
+      plugins:
+        zsh-syntax-highlighting: "https://github.com/zsh-users/zsh-syntax-highlighting"
+      themes:
+        powerlevel10k: "https://github.com/romkatv/powerlevel10k"
+  vagrant:
+    home: "/home/vagrant"
+    ohmyzsh:
+      ensure: "present"
+      plugins:
+        zsh-syntax-highlighting: "https://github.com/zsh-users/zsh-syntax-highlighting"
+      themes:
+        powerlevel10k: "https://github.com/romkatv/powerlevel10k"
+  axel:
+    home: "/home/axel"
+    ohmyzsh:
+      ensure: "present"
+      plugins:
+        zsh-syntax-highlighting: "https://github.com/zsh-users/zsh-syntax-highlighting"
+      themes:
+        powerlevel10k: "https://github.com/romkatv/powerlevel10k"

@@ -1,0 +1,44 @@
+- name: Installing Puppet on Ubuntu
+  hosts: servers
+  vars:
+  tasks:
+    - name: Add Puppet repo
+      become: yes
+      shell:
+        cmd: 'wget https://apt.puppet.com/puppet7-release-focal.deb && sudo dpkg -i puppet7-release-focal.deb'
+        creates: puppet7-release-focal.deb
+    - name: Install puppet-agent package
+      become: yes
+      package:
+        name: puppet-agent
+        state: latest
+        update_cache: yes
+- name: Configuring Puppet on Ubuntu
+  hosts: servers
+  vars:
+  tasks:
+    - name: Add Puppet IP to hosts file
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.10.10 devops01.ynov.com" 
+    - name: Configure Puppet agent to connect to devops01
+      become: yes
+      blockinfile:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        block: |
+          [main]
+          server = devops01.ynov.com
+- name: Initial agent run of Puppet on Ubuntu
+  hosts: servers
+  vars:
+  tasks:
+    - name: Execute puppet agent -t
+      become: yes
+      shell:
+        cmd: '/opt/puppetlabs/puppet/bin/puppet agent -t --waitforcert 10'
+        creates: /etc/puppetlabs/puppet/ssl/private_keys/{{inventory_hostname}}.pem
+      register: result
+      failed_when:
+        - result.rc != 0
+        - result.rc != 1

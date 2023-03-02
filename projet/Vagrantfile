@@ -1,0 +1,28 @@
+  # -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2204"
+
+  config.vm.define "devops01" do |devops01|
+    devops01.vm.hostname = "devops01.ynov.com"
+    devops01.vm.provider "virtualbox" do |vb|
+      vb.name = "devops01"
+    end
+    
+    devops01.vm.network "private_network", ip: "192.168.10.10"
+    devops01.vm.synced_folder "./puppetlabs", "/etc/puppetlabs"
+    devops01.vm.provision "file", source: "./scripts", destination: "/home/vagrant/install"
+    devops01.vm.provision "shell", inline: "/bin/sh ~vagrant/install/install.sh"
+  end
+  
+  config.vm.define "devops02" do |devops02|
+    devops02.vm.hostname = "devops02.ynov.com"
+    devops02.vm.provider "virtualbox" do |vb|
+      vb.name = "devops02"
+      vb.memory = 4096
+    end
+    devops02.vm.network "private_network", ip: "192.168.10.11"
+    devops02.vm.synced_folder "./docker", "/home/vagrant/docker"
+  end
+end

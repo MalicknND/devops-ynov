@@ -1,0 +1,64 @@
+version: '3'
+services:
+  zabbix-database:
+    image: bitnami/postgresql:15.0.0
+    volumes:
+      - pgsql-volume:/bitnami/postgresql
+    restart: always
+    environment:
+      - POSTGRESQL_DATABASE=zabbix
+      - POSTGRESQL_USERNAME=zabbixuser
+      - POSTGRESQL_PASSWORD=P@ssword1234!
+    networks:
+      - zabbix-network-back
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:alpine-6.2-latest
+    ports:
+      - 10051:10051
+    restart: always
+    environment:
+      - DB_SERVER_HOST=zabbix-database
+      - POSTGRES_USER=zabbixuser
+      - POSTGRES_PASSWORD=P@ssword1234!
+    networks:
+      - zabbix-network-front
+      - zabbix-network-back
+    depends_on:
+      - zabbix-database
+  zabbix-frontend:
+    image: zabbix/zabbix-web-apache-pgsql:alpine-6.2-latest
+    ports:
+      - 80:8080
+    restart: always
+    environment:
+      - DB_SERVER_HOST=zabbix-database
+      - POSTGRES_USER=zabbixuser
+      - POSTGRES_PASSWORD=P@ssword1234!
+      - ZBX_SERVER_HOST=zabbix-server
+      - PHP_TZ=Europe/Paris
+    networks:
+      - zabbix-network-front
+      - zabbix-network-back
+    depends_on:
+      - zabbix-database
+      - zabbix-server
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-6.2-latest
+    ports:
+      - 10050:10050
+    environment:
+      - ZBX_HOSTNAME=devops02.ynov.com
+      - ZBX_SERVER_HOST=zabbix-server
+    restart: always
+    networks:
+      - zabbix-network-front
+    depends_on:
+      - zabbix-database
+      - zabbix-server
+
+volumes:
+  pgsql-volume:
+
+networks:
+  zabbix-network-front: {}
+  zabbix-network-back: {}
